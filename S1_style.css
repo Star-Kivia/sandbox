@@ -1,0 +1,619 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --cor-fundo:      #FFF8E7;
+  --cor-superficie: #ffffff;
+  --cor-borda:      #FFE0B5;
+  --cor-primaria:   #FF8C42;
+  --cor-destaque:   #FFD93D;
+  --cor-texto:      #2D2D2D;
+  --cor-texto-2:    #6B6B6B;
+  --cor-acerto:     #6BCB77;
+  --cor-erro:       #FF6B6B;
+
+  --fonte-corpo: 'Nunito', sans-serif;
+  --fonte-mono:  'JetBrains Mono', monospace;
+
+  --raio:    12px;
+  --raio-sm:  8px;
+}
+
+/* ── RESET ───────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { height: 100%; }
+
+/* ── BODY ────────────────────────────────────── */
+body {
+  font-family: var(--fonte-corpo);
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+}
+
+/* ── TELAS ───────────────────────────────────── */
+/* Cada seção é uma "tela". Só a tela com a classe .ativa aparece. */
+.tela {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 460px;
+}
+
+.tela.ativa {
+  display: flex;
+}
+
+/* ── BOTÃO ───────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border: 2px solid var(--cor-primaria);
+  border-radius: var(--raio);
+  background-color: var(--cor-primaria);
+  color: #fff;
+  font-family: var(--fonte-corpo);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efeito de brilho que desliza no hover */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.4s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Efeito de clique: encolhe suavemente */
+.btn:active {
+  transform: scale(0.96);
+  transition: transform 0.05s ease;
+}
+
+/* ══ TELA HOME ══════════════════════════════════ */
+.home-logo {
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.logo-icone {
+  font-size: 3.5rem;
+  display: block;
+  margin-bottom: 0.4rem;
+  transition: filter 0.2s ease;
+}
+
+.logo-icone:hover {
+  filter: drop-shadow(0 0 8px var(--cor-primaria));
+}
+
+.logo-texto {
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-destaque), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 2px;
+}
+
+.logo-sub {
+  font-family: var(--fonte-mono);
+  font-size: 0.65rem;
+  color: var(--cor-texto-2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+/* cards de info (perguntas / tempo / categorias) */
+.home-info {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.info-card {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.info-num {
+  font-family: var(--fonte-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.info-label {
+  font-size: 0.65rem;
+  color: var(--cor-texto-2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.campo-nickname {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.campo-nickname label {
+  font-family: var(--fonte-mono);
+  font-size: 0.65rem;
+  color: var(--cor-texto-2);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-left: 0.2rem;
+}
+
+.campo-nickname input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  color: var(--cor-texto);
+  font-family: var(--fonte-mono);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.campo-nickname input:focus {
+  border-color: var(--cor-primaria);
+}
+
+.campo-nickname input::placeholder {
+  color: var(--cor-borda);
+}
+
+.campo-erro {
+  font-size: 0.78rem;
+  color: var(--cor-erro);
+  min-height: 1rem;
+  padding-left: 0.2rem;
+}
+
+
+/* ══ TELA QUESTÃO ════════════════════════════════ */
+.questao-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.progresso-info {
+  font-family: var(--fonte-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-destaque));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+}
+
+.progresso-sep {
+  margin: 0 1px;
+}
+
+.barra-progresso {
+  flex: 1;
+  height: 6px;
+  background: var(--cor-borda);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra-fill {
+  height: 100%;
+  width: 10%;
+  background: linear-gradient(90deg, var(--cor-primaria), var(--cor-acerto));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.timer-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.timer-svg {
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+}
+
+.timer-trilha {
+  fill: none;
+  stroke: var(--cor-borda);
+  stroke-width: 3;
+}
+
+.timer-arco {
+  fill: none;
+  stroke: var(--cor-primaria);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 107;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fonte-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.categoria-tag {
+  align-self: flex-start;
+  font-family: var(--fonte-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-destaque));
+  color: white;
+  border: none;
+}
+
+.questao-card {
+  width: 100%;
+  padding: 1.4rem 1.25rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+
+.questao-texto {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.65;
+  background: linear-gradient(135deg, var(--cor-texto), var(--cor-primaria));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.opcoes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.opcao-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-sm);
+  cursor: pointer;
+  text-align: left;
+  color: var(--cor-texto);
+  font-family: var(--fonte-corpo);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efeito de brilho que passa no hover */
+.opcao-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 140, 66, 0.15), transparent);
+  transition: left 0.4s ease;
+  pointer-events: none;
+}
+
+.opcao-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.opcao-btn:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background: rgba(255, 140, 66, 0.05);
+  transform: translateX(3px);
+}
+
+/* Efeito de clique suave nos botões de resposta */
+.opcao-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.05s ease;
+}
+
+.opcao-btn:disabled {
+  cursor: not-allowed;
+}
+
+.opcao-letra {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fonte-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-destaque));
+  color: white;
+  border: none;
+}
+
+.opcao-texto {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* feedback visual das opções */
+.opcao-btn.correta {
+  border-color: var(--cor-acerto) !important;
+  background: #e8f5e9 !important;
+  color: var(--cor-acerto);
+}
+
+.opcao-btn.correta .opcao-letra {
+  background: linear-gradient(135deg, var(--cor-acerto), #4CAF50);
+}
+
+.opcao-btn.errada {
+  border-color: var(--cor-erro) !important;
+  background: #ffebee !important;
+  color: var(--cor-erro);
+}
+
+.opcao-btn.errada .opcao-letra {
+  background: linear-gradient(135deg, var(--cor-erro), #c62828);
+}
+
+
+/* ══ TELA FEEDBACK ══════════════════════════════ */
+.feedback-icone {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.feedback-titulo {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.feedback-titulo.acerto {
+  background: linear-gradient(135deg, var(--cor-acerto), #4CAF50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feedback-titulo.erro {
+  background: linear-gradient(135deg, var(--cor-erro), #c62828);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feedback-explicacao {
+  font-size: 0.875rem;
+  color: var(--cor-texto-2);
+  text-align: center;
+  line-height: 1.65;
+  max-width: 380px;
+}
+
+.feedback-pontos {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.pontos-num {
+  font-family: var(--fonte-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pontos-label {
+  font-size: 0.8rem;
+  color: var(--cor-texto-2);
+  font-weight: 600;
+}
+
+.feedback-placar {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.placar-label {
+  font-family: var(--fonte-mono);
+  font-size: 0.62rem;
+  color: var(--cor-texto-2);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.placar-num {
+  font-family: var(--fonte-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+
+/* ══ TELA RESULTADO ═════════════════════════════ */
+.resultado-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resultado-medalha {
+  font-size: 4.5rem;
+  line-height: 1;
+}
+
+.resultado-nome {
+  font-family: var(--fonte-mono);
+  font-size: 0.9rem;
+  color: var(--cor-texto-2);
+  font-weight: 700;
+}
+
+.resultado-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+/* Score final */
+.score-num {
+  font-family: var(--fonte-mono);
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.score-label {
+  font-family: var(--fonte-mono);
+  font-size: 0.62rem;
+  color: var(--cor-texto-2);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.resultado-stats {
+  display: flex;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.stat {
+  flex: 1;
+  padding: 0.9rem 0.5rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Valores das estatísticas*/
+.stat-val {
+  font-family: var(--fonte-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-acerto));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stat-label {
+  font-size: 0.6rem;
+  color: var(--cor-texto-2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.resultado-mensagem {
+  font-size: 0.9rem;
+  color: var(--cor-texto-2);
+  text-align: center;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ── RESPONSIVO ──────────────────────────────── */
+@media (max-width: 380px) {
+  .logo-texto  { font-size: 2.2rem; }
+  .score-num   { font-size: 3.5rem; }
+}
