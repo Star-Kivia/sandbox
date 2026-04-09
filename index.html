@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizCaju — Jogo de Perguntas</title>
+
+  <!-- 
+    Os scripts foram movidos para o final do <body>.
+    Antes estavam no <head> e o js tentava acessar elementos
+    que ainda não existiam no DOM, retornando null.
+  -->
+  <link rel="stylesheet" href="S1_style.css" />
+</head>
+
+<body>
+
+  <!-- Botão do menu hambúrguer -->
+  <button class="menu-hamburger" id="menu-hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- ================================
+     ESTRUTURA MULTIPLAYER (SIDEBAR)
+     NAO REMOVE NADA, SO ORGANIZA
+================================= -->
+  <div id="app-container">
+
+    <aside id="sidebar">
+
+      <!-- HUD GLOBAL -->
+      <div id="hud-topo">
+        <span id="hud-online">0 jogadores online</span>
+      </div>
+
+      <!-- RANKING -->
+      <div id="ranking-box">
+        <h3>Ranking</h3>
+        <div id="ranking"></div>
+      </div>
+
+      <!-- ================================
+         CHAT GLOBAL
+    ================================= -->
+      <div id="chat-box">
+
+        <!-- área de mensagens -->
+        <div id="chat-mensagens"></div>
+
+        <!-- input + botão -->
+        <div id="chat-input-area">
+          <input type="text" id="chat-input" placeholder="Digite uma mensagem..." autocomplete="off" />
+          <button id="chat-enviar" type="button">Enviar</button>
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+
+  <!-- ================================
+         AREA DO JOGO (SEU HTML ORIGINAL)
+    ================================= -->
+  <main id="game-area">
+
+    <!-- ================================
+           TELA 1: HOME
+      ================================= -->
+    <section id="tela-home" class="tela ativa">
+
+      <div class="home-logo">
+        <span class="logo-icone">🥭</span>
+        <h1 class="logo-texto">QuizCaju</h1>
+        <p class="logo-sub">pelo CajuHub · Jovem Tech</p>
+      </div>
+
+      <div class="home-info">
+        <div class="info-card">
+          <!-- CORRIGIDO: id era "qtd-perguntas", agora é "total-perguntas" -->
+          <span class="info-num" id="total-perguntas">--</span>
+          <span class="info-label">perguntas</span>
+        </div>
+        <div class="info-card">
+          <span class="info-num">20s</span>
+          <span class="info-label">por questão</span>
+        </div>
+        <div class="info-card">
+          <!-- CORRIGIDO: id estava correto, mas mantido como "total-categorias" -->
+          <span class="info-num" id="total-categorias">--</span>
+          <span class="info-label">categorias</span>
+        </div>
+      </div>
+
+      <div class="campo-nickname">
+        <label for="input-nickname">seu nickname</label>
+        <input type="text" id="input-nickname" placeholder="ex: dev_caju" maxlength="20" autocomplete="off" />
+        <!-- CORRIGIDO: id era "erro-nickname", agora está igual ao que o JS procura -->
+        <span class="campo-erro" id="erro-nickname"></span>
+      </div>
+
+      <button class="btn btn-primario" id="btn-iniciar">
+        jogar agora →
+      </button>
+
+    </section>
+
+
+    <!-- ================================
+           TELA 2: QUESTÃO
+      ================================= -->
+    <section id="tela-questao" class="tela">
+
+      <header class="questao-header">
+        <div class="progresso-info">
+          <span id="questao-atual">1</span>
+          <span class="progresso-sep">/</span>
+          <span id="questao-total">10</span>
+        </div>
+
+        <div class="barra-progresso">
+          <div class="barra-fill" id="barra-fill"></div>
+        </div>
+
+        <div class="timer-wrap">
+          <svg class="timer-svg" viewBox="0 0 40 40">
+            <circle class="timer-trilha" cx="20" cy="20" r="17" />
+            <circle class="timer-arco" cx="20" cy="20" r="17" id="timer-arco" />
+          </svg>
+          <span class="timer-num" id="timer-num">20</span>
+        </div>
+      </header>
+
+      <!-- CORRIGIDO: id era "tag-categoria", agora é "categoria-tag" -->
+      <div class="categoria-tag" id="categoria-tag">HTML</div>
+
+      <div class="questao-card">
+        <p class="questao-texto" id="questao-texto">
+          Carregando pergunta...
+        </p>
+      </div>
+
+      <div class="opcoes-grid" id="opcoes-grid">
+        <!-- opções injetadas pelo app.js -->
+      </div>
+
+    </section>
+
+
+    <!-- ================================
+           TELA 3: FEEDBACK
+      ================================= -->
+    <section id="tela-feedback" class="tela">
+
+      <div class="feedback-icone" id="feedback-icone">⏳</div>
+
+      <!-- CORRIGIDO: era <h3>, agora é <h2> (título de seção correto semanticamente) -->
+      <h2 class="feedback-titulo" id="feedback-titulo">Resultado</h2>
+
+      <p class="feedback-explicacao" id="feedback-explicacao">
+        A explicação vai aparecer aqui.
+      </p>
+
+      <div class="feedback-pontos">
+        <span class="pontos-num" id="feedback-pontos">+0</span>
+        <span class="pontos-label">pontos</span>
+      </div>
+
+      <div class="feedback-placar">
+        <span class="placar-label">placar total</span>
+        <span class="placar-num" id="placar-parcial">0</span>
+      </div>
+
+      <button class="btn btn-primario" id="btn-proxima">
+        próxima →
+      </button>
+
+    </section>
+
+
+    <!-- ================================
+           TELA 4: RESULTADO FINAL
+      ================================= -->
+    <section id="tela-resultado" class="tela">
+
+      <div class="resultado-topo">
+        <div class="resultado-medalha" id="resultado-medalha">🏅</div>
+        <!-- CORRIGIDO: id era "nome-jogador", agora é "resultado-nome" -->
+        <h2 class="resultado-nome" id="resultado-nome">jogador</h2>
+      </div>
+
+      <div class="resultado-score">
+        <span class="score-num" id="score-final">0</span>
+        <span class="score-label">pontos</span>
+      </div>
+
+      <div class="resultado-stats">
+        <div class="stat">
+          <span class="stat-val" id="stat-acertos">0</span>
+          <span class="stat-label">acertos</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" id="stat-erros">0</span>
+          <span class="stat-label">erros</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" id="stat-porcento">0%</span>
+          <span class="stat-label">aproveitamento</span>
+        </div>
+      </div>
+
+      <p class="resultado-mensagem" id="resultado-mensagem">
+        Você completou o quiz!
+      </p>
+
+      <button class="btn btn-primario" id="btn-jogar-novamente">
+        jogar novamente
+      </button>
+
+    </section>
+
+  </main>
+
+  </div>
+
+  <!-- Overlay para fechar menu no mobile -->
+  <div class="menu-overlay" id="menu-overlay"></div>
+
+  <!-- 
+    SCRIPTS NA ORDEM CORRETA:
+    1. Primeiro carrega as perguntas (questions.js)
+    2. Depois carrega a lógica do jogo (app.js)
+    3. Carrega o socket.io e o socket.js para multiplayer
+    4. Carrega o menu.js para controle do menu lateral
+    
+    - Antes os scripts estavam no <head> e executavam antes do DOM estar pronto.
+    Agora estão no final do <body> e os elementos já existem quando o JS roda.
+  -->
+  <script src="S1_questions.js"></script>
+  <script src="S1_app.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="socket.js"></script>
+  <script src="menu.js"></script>
+
+</body>
+
+</html>

@@ -1,46 +1,406 @@
+/* Importa as fontes do Google Fonts: Nunito para texto geral e JetBrains Mono para códigos/números */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
+/* ============================================
+   VARIAVEIS GLOBAIS (CSS CUSTOM PROPERTIES)
+   Define cores, fontes, bordas e tamanhos reutilizáveis
+   ============================================ */
 :root {
-  --cor-fundo:      #FFF8E7;
-  --cor-superficie: #ffffff;
-  --cor-borda:      #FFE0B5;
-  --cor-primaria:   #FF8C42;
-  --cor-destaque:   #FFD93D;
-  --cor-texto:      #2D2D2D;
-  --cor-texto-2:    #6B6B6B;
-  --cor-acerto:     #6BCB77;
-  --cor-erro:       #FF6B6B;
+  /* Cores principais do tema */
+  --cor-fundo:      #FFF8E7;  /* Cor de fundo geral da aplicacao - bege claro */
+  --cor-superficie: #ffffff;  /* Cor de fundo de cards, menus e superficies - branco */
+  --cor-borda:      #FFE0B5;  /* Cor das bordas - laranja bem claro */
+  --cor-primaria:   #FF8C42;  /* Cor principal do quiz - laranja vibrante */
+  --cor-destaque:   #FFD93D;  /* Cor de destaque - amarelo */
+  --cor-texto:      #2D2D2D;  /* Cor principal do texto - cinza escuro */
+  --cor-texto-2:    #6B6B6B;  /* Cor secundaria do texto - cinza medio */
+  --cor-acerto:     #6BCB77;  /* Cor verde para respostas corretas */
+  --cor-erro:       #FF6B6B;  /* Cor vermelha para respostas erradas */
 
-  --fonte-corpo: 'Nunito', sans-serif;
-  --fonte-mono:  'JetBrains Mono', monospace;
+  /* Fontes da aplicacao */
+  --fonte-corpo: 'Nunito', sans-serif;      /* Fonte principal para textos */
+  --fonte-mono:  'JetBrains Mono', monospace; /* Fonte monoespacada para numeros e codigos */
 
-  --raio:    12px;
-  --raio-sm:  8px;
+  /* Tamanhos de borda arredondada */
+  --raio:    12px;   /* Raio padrao para cards e botoes grandes */
+  --raio-sm:  8px;   /* Raio pequeno para elementos menores */
+  
+  /* Largura fixa do menu lateral */
+  --sidebar-width: 280px;
 }
 
-/* ── RESET ───────────────────────────────────── */
+/* ============================================
+   RESET GLOBAL
+   Remove margens e paddings padrao, define box-sizing consistente
+   ============================================ */
 *, *::before, *::after {
-  box-sizing: border-box;
+  box-sizing: border-box;  /* Faz com que padding e border sejam incluidos na largura total */
   margin: 0;
   padding: 0;
 }
 
-html { height: 100%; }
+html { 
+  height: 100%;
+  overflow-x: hidden;  /* Remove scroll horizontal indesejado */
+}
 
-/* ── BODY ────────────────────────────────────── */
 body {
   font-family: var(--fonte-corpo);
   background-color: var(--cor-fundo);
   color: var(--cor-texto);
   min-height: 100vh;
+  position: relative;    /* Permite posicionamento absoluto de elementos filhos */
+  overflow-x: hidden;   /* Remove scroll horizontal */
+}
+
+/* ============================================
+   MENU LATERAL (SIDEBAR)
+   Estilo inspirado em Discord/WhatsApp com fundo branco e borda lateral
+   ============================================ */
+#sidebar {
+  width: var(--sidebar-width);
+  background: var(--cor-superficie);
+  border-right: 1px solid var(--cor-borda);
+  display: flex;
+  flex-direction: column;   /* Organiza conteudo em coluna: header, ranking, chat */
+  position: fixed;          /* Fixa o menu na tela, nao rola com a pagina */
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;            /* Fica acima do conteudo principal */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animacao suave ao abrir/fechar */
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05); /* Sombra sutil na borda direita */
+}
+
+/* Estado do menu quando esta fechado (mobile) - escondido fora da tela */
+#sidebar.menu-fechado {
+  transform: translateX(-100%);
+}
+
+/* Estado do menu quando esta aberto (mobile) - visivel na tela */
+#sidebar.menu-aberto {
+  transform: translateX(0);
+}
+
+/* ============================================
+   BOTAO HAMBURGUER (MENU TOGGLE)
+   Botao flutuante que abre/fecha o menu lateral em dispositivos moveis
+   Posicionado no canto superior direito para nao sobrepor conteudo
+   ============================================ */
+.menu-hamburger {
+  position: fixed;
+  top: 20px;
+  right: 20px;              /* Posicionado na direita para nao atrapalhar o texto de jogadores online */
+  z-index: 1001;            /* Fica acima do menu lateral */
+  width: 45px;
+  height: 45px;
+  background: var(--cor-primaria);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;                 /* Espacamento entre as tres linhas do hamburguer */
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* As tres linhas do icone hamburguer */
+.menu-hamburger span {
+  width: 25px;
+  height: 3px;
+  background: white;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+/* Efeito hover: muda cor de fundo e escala o botao */
+.menu-hamburger:hover {
+  background: var(--cor-destaque);
+  transform: scale(1.05);
+}
+
+.menu-hamburger:hover span {
+  background: var(--cor-texto);
+}
+
+/* ============================================
+   OVERLAY (FUNDO ESCURO)
+   Camada escura que aparece atras do menu quando aberto no mobile
+   Ao clicar, fecha o menu
+   ============================================ */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);  /* Efeito de desfoque no fundo */
+}
+
+.menu-overlay.ativo {
+  display: block;
+}
+
+/* ============================================
+   HEADER DO MENU (HUD TOPO)
+   Exibe informacoes de jogadores online com indicador visual
+   ============================================ */
+#hud-topo {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--cor-borda);
+  background: linear-gradient(135deg, rgba(255,140,66,0.05), rgba(255,217,61,0.05));
+}
+
+#hud-topo span {
+  font-size: 0.85rem;
+  color: var(--cor-texto-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Indicador de status online (piscante) */
+#hud-topo span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #4CAF50;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite;  /* Animacao de pulsacao */
+}
+
+/* Animacao de pulsacao para o indicador de online */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* ============================================
+   RANKING BOX
+   Lista de pontuacao dos jogadores
+   ============================================ */
+#ranking-box {
+  flex: 1;                    /* Ocupa todo espaco disponivel, empurrando o chat para baixo */
+  padding: 20px;
+  overflow-y: auto;           /* Scroll vertical se o ranking for muito grande */
+  border-bottom: 1px solid var(--cor-borda);
+  min-height: 0;              /* Permite que o flex encolha corretamente */
+}
+
+#ranking-box h3 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--cor-texto-2);
+  margin-bottom: 16px;
+}
+
+#ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Cada item do ranking */
+#ranking div {
+  padding: 10px 12px;
+  background: rgba(255,140,66,0.05);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+/* Efeito hover nos itens do ranking */
+#ranking div:hover {
+  background: rgba(255,140,66,0.1);
+  transform: translateX(3px);
+}
+
+/* ============================================
+   CHAT BOX (BALOES ESTILO WHATSAPP)
+   Sistema de mensagens com baloes diferenciados para mensagens proprias e de outros
+   ============================================ */
+#chat-box {
+  padding: 20px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;            /* Impede que o chat encolha alem do tamanho definido */
+}
+
+/* Area onde as mensagens sao exibidas */
+#chat-mensagens {
+  flex: 1;
+  overflow-y: auto;          /* Scroll para mensagens antigas */
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Container de cada mensagem com animacao de entrada */
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  animation: fadeInMessage 0.3s ease;
+}
+
+/* Animacao de fade-in para novas mensagens */
+@keyframes fadeInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Balão base da mensagem */
+.message-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+}
+
+/* Mensagem do proprio usuario (lado direito) - gradiente laranja */
+.message-bubble.own {
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-destaque));
+  color: white;
+  align-self: flex-end;      /* Alinha a direita */
+  border-bottom-right-radius: 4px;  /* Puxa a ponta do balao */
+}
+
+/* Mensagem de outros usuarios (lado esquerdo) - fundo branco */
+.message-bubble.other {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+  align-self: flex-start;    /* Alinha a esquerda */
+  border-bottom-left-radius: 4px;   /* Puxa a ponta do balao */
+}
+
+/* Nome do remetente da mensagem */
+.message-name {
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.message-bubble.own .message-name {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message-bubble.other .message-name {
+  color: var(--cor-primaria);
+}
+
+/* Texto da mensagem */
+.message-text {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  word-break: break-word;   /* Quebra palavras longas para evitar overflow */
+}
+
+/* Horario da mensagem */
+.message-time {
+  font-size: 0.6rem;
+  opacity: 0.7;
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* ============================================
+   AREA DE INPUT DO CHAT
+   Campo de texto e botao enviar
+   ============================================ */
+#chat-input-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: auto;
+}
+
+#chat-input {
+  flex: 1;
+  min-width: 0;              /* Permite que o input encolha em telas pequenas */
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 20px;
+  font-family: var(--fonte-corpo);
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+  background: var(--cor-superficie);
+}
+
+/* Foco no campo de texto */
+#chat-input:focus {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px rgba(255,140,66,0.1);
+}
+
+#chat-enviar {
+  flex-shrink: 0;            /* Impede que o botao encolha */
+  padding: 10px 18px;
+  background: var(--cor-primaria);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  white-space: nowrap;       /* Impede quebra de linha no texto do botao */
+}
+
+#chat-enviar:hover {
+  background: var(--cor-destaque);
+  color: var(--cor-texto);
+  transform: scale(1.02);
+}
+
+/* ============================================
+   AREA PRINCIPAL DO JOGO
+   Onde o quiz e exibido - centralizado na tela
+   ============================================ */
+#game-area {
+  flex: 1;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  padding: 2rem;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── TELAS ───────────────────────────────────── */
-/* Cada seção é uma "tela". Só a tela com a classe .ativa aparece. */
+#app {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   TELAS DO JOGO
+   Home, Questao, Feedback e Resultado
+   ============================================ */
 .tela {
   display: none;
   flex-direction: column;
@@ -54,7 +414,10 @@ body {
   display: flex;
 }
 
-/* ── BOTÃO ───────────────────────────────────── */
+/* ============================================
+   BOTOES PADRAO
+   Estilo principal dos botoes do jogo
+   ============================================ */
 .btn {
   width: 100%;
   padding: 0.9rem 1.5rem;
@@ -68,7 +431,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
+  overflow: hidden;          /* Esconde o overflow do efeito de brilho */
 }
 
 /* Efeito de brilho que desliza no hover */
@@ -98,7 +461,10 @@ body {
   transition: transform 0.05s ease;
 }
 
-/* ══ TELA HOME ══════════════════════════════════ */
+/* ============================================
+   TELA HOME
+   Logo, informacoes do quiz e campo de nickname
+   ============================================ */
 .home-logo {
   text-align: center;
   padding-top: 0.5rem;
@@ -134,7 +500,7 @@ body {
   margin-top: 0.3rem;
 }
 
-/* cards de info (perguntas / tempo / categorias) */
+/* Cards informativos (perguntas, tempo, categorias) */
 .home-info {
   display: flex;
   gap: 0.75rem;
@@ -151,6 +517,12 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,140,66,0.1);
 }
 
 .info-num {
@@ -170,6 +542,7 @@ body {
   letter-spacing: 1px;
 }
 
+/* Campo de entrada do nickname */
 .campo-nickname {
   display: flex;
   flex-direction: column;
@@ -207,6 +580,7 @@ body {
   color: var(--cor-borda);
 }
 
+/* Mensagem de erro do nickname */
 .campo-erro {
   font-size: 0.78rem;
   color: var(--cor-erro);
@@ -214,8 +588,10 @@ body {
   padding-left: 0.2rem;
 }
 
-
-/* ══ TELA QUESTÃO ════════════════════════════════ */
+/* ============================================
+   TELA QUESTAO
+   Progresso, timer, categoria, pergunta e opcoes
+   ============================================ */
 .questao-header {
   display: flex;
   align-items: center;
@@ -238,6 +614,7 @@ body {
   margin: 0 1px;
 }
 
+/* Barra de progresso da partida */
 .barra-progresso {
   flex: 1;
   height: 6px;
@@ -254,6 +631,7 @@ body {
   transition: width 0.5s ease;
 }
 
+/* Timer circular SVG */
 .timer-wrap {
   position: relative;
   width: 44px;
@@ -312,12 +690,19 @@ body {
   border: none;
 }
 
+/* Card da pergunta */
 .questao-card {
   width: 100%;
   padding: 1.4rem 1.25rem;
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio);
+  transition: all 0.2s ease;
+}
+
+.questao-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,140,66,0.1);
 }
 
 .questao-texto {
@@ -330,6 +715,7 @@ body {
   color: transparent;
 }
 
+/* Grid de opcoes de resposta */
 .opcoes-grid {
   display: flex;
   flex-direction: column;
@@ -381,7 +767,7 @@ body {
   transform: translateX(3px);
 }
 
-/* Efeito de clique suave nos botões de resposta */
+/* Efeito de clique suave nos botoes de resposta */
 .opcao-btn:active:not(:disabled) {
   transform: scale(0.97);
   transition: transform 0.05s ease;
@@ -391,6 +777,7 @@ body {
   cursor: not-allowed;
 }
 
+/* Letra da opcao (A, B, C, D) */
 .opcao-letra {
   width: 28px;
   height: 28px;
@@ -412,7 +799,7 @@ body {
   word-break: break-word;
 }
 
-/* feedback visual das opções */
+/* Estilos de feedback visual para opcao correta */
 .opcao-btn.correta {
   border-color: var(--cor-acerto) !important;
   background: #e8f5e9 !important;
@@ -423,6 +810,7 @@ body {
   background: linear-gradient(135deg, var(--cor-acerto), #4CAF50);
 }
 
+/* Estilos de feedback visual para opcao errada */
 .opcao-btn.errada {
   border-color: var(--cor-erro) !important;
   background: #ffebee !important;
@@ -433,8 +821,10 @@ body {
   background: linear-gradient(135deg, var(--cor-erro), #c62828);
 }
 
-
-/* ══ TELA FEEDBACK ══════════════════════════════ */
+/* ============================================
+   TELA FEEDBACK
+   Exibe resultado da resposta e pontos ganhos
+   ============================================ */
 .feedback-icone {
   font-size: 4rem;
   line-height: 1;
@@ -447,6 +837,7 @@ body {
   text-align: center;
 }
 
+/* Gradiente para titulo de acerto */
 .feedback-titulo.acerto {
   background: linear-gradient(135deg, var(--cor-acerto), #4CAF50);
   -webkit-background-clip: text;
@@ -454,6 +845,7 @@ body {
   color: transparent;
 }
 
+/* Gradiente para titulo de erro */
 .feedback-titulo.erro {
   background: linear-gradient(135deg, var(--cor-erro), #c62828);
   -webkit-background-clip: text;
@@ -491,6 +883,7 @@ body {
   font-weight: 600;
 }
 
+/* Placar parcial durante o jogo */
 .feedback-placar {
   width: 100%;
   padding: 0.9rem 1.25rem;
@@ -520,8 +913,10 @@ body {
   color: transparent;
 }
 
-
-/* ══ TELA RESULTADO ═════════════════════════════ */
+/* ============================================
+   TELA RESULTADO FINAL
+   Exibe pontuacao final, estatisticas e medalha
+   ============================================ */
 .resultado-topo {
   display: flex;
   flex-direction: column;
@@ -548,7 +943,6 @@ body {
   gap: 0.1rem;
 }
 
-/* Score final */
 .score-num {
   font-family: var(--fonte-mono);
   font-size: 4.5rem;
@@ -584,9 +978,14 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
+  transition: all 0.2s ease;
 }
 
-/* Valores das estatísticas*/
+.stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,140,66,0.1);
+}
+
 .stat-val {
   font-family: var(--fonte-mono);
   font-size: 1.4rem;
@@ -612,8 +1011,254 @@ body {
   font-style: italic;
 }
 
-/* ── RESPONSIVO ──────────────────────────────── */
-@media (max-width: 380px) {
-  .logo-texto  { font-size: 2.2rem; }
-  .score-num   { font-size: 3.5rem; }
+/* ============================================
+   RESPONSIVIDADE
+   Ajustes para diferentes tamanhos de tela
+   ============================================ */
+
+/* Desktop: acima de 768px - menu sempre visivel, botao hamburguer escondido */
+@media (min-width: 769px) {
+  .menu-hamburger {
+    display: none !important;
+  }
+  
+  #sidebar {
+    transform: translateX(0) !important;
+  }
+  
+  #game-area {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+/* Tablet e Mobile: ate 768px - menu recolhivel, botao hamburguer visivel */
+@media (max-width: 768px) {
+  .menu-hamburger {
+    display: flex !important;
+  }
+  
+  #sidebar {
+    transform: translateX(-100%);
+    width: 280px;
+  }
+  
+  #sidebar.menu-aberto {
+    transform: translateX(0);
+  }
+  
+  #game-area {
+    margin-left: 0;
+    padding: 1.5rem;
+    padding-top: 80px;
+  }
+  
+  .logo-texto {
+    font-size: 2.2rem;
+  }
+  
+  .score-num {
+    font-size: 3.5rem;
+  }
+  
+  /* Ajuste do chat em telas medias */
+  #chat-box {
+    height: auto;
+    min-height: 200px;
+    max-height: 280px;
+  }
+  
+  #chat-input {
+    font-size: 0.8rem;
+  }
+  
+  #chat-enviar {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile pequeno: ate 480px - ajustes finos de espacamento e fontes */
+@media (max-width: 480px) {
+  .menu-hamburger {
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .menu-hamburger span {
+    width: 20px;
+    height: 2.5px;
+  }
+  
+  #game-area {
+    padding: 1rem;
+    padding-top: 70px;
+  }
+  
+  .logo-texto {
+    font-size: 1.8rem;
+  }
+  
+  .logo-icone {
+    font-size: 2.5rem;
+  }
+  
+  /* Empilha os cards de informacao verticalmente */
+  .home-info {
+    flex-direction: column;
+  }
+  
+  /* Empilha as estatisticas verticalmente */
+  .resultado-stats {
+    flex-direction: column;
+  }
+  
+  .tela {
+    max-width: 100%;
+  }
+  
+  /* Ajustes do chat para mobile */
+  #chat-box {
+    padding: 15px;
+    min-height: 220px;
+  }
+  
+  #chat-input-area {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  
+  #chat-input {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    min-width: 0;
+  }
+  
+  #chat-enviar {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  
+  .message-bubble {
+    max-width: 90%;
+    padding: 8px 12px;
+  }
+  
+  .message-text {
+    font-size: 0.8rem;
+  }
+  
+  /* Ajustes do ranking para mobile */
+  #ranking-box {
+    padding: 15px;
+  }
+  
+  #ranking div {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile muito pequeno: ate 360px - fontes ainda menores */
+@media (max-width: 360px) {
+  .logo-texto {
+    font-size: 1.5rem;
+  }
+  
+  .score-num {
+    font-size: 2.5rem;
+  }
+  
+  #chat-enviar {
+    padding: 8px 10px;
+    font-size: 0.7rem;
+  }
+  
+  .message-bubble {
+    max-width: 95%;
+  }
+  
+  #ranking-box h3 {
+    font-size: 0.6rem;
+  }
+  
+  #ranking div {
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+}
+
+/* Orientacao landscape (horizontal) em dispositivos moveis */
+@media (max-width: 768px) and (orientation: landscape) {
+  #game-area {
+    padding-top: 70px;
+    min-height: auto;
+  }
+  
+  /* Mantem os cards em linha na horizontal */
+  .home-info {
+    flex-direction: row;
+  }
+  
+  .logo-texto {
+    font-size: 1.5rem;
+  }
+  
+  .logo-icone {
+    font-size: 2rem;
+  }
+  
+  #sidebar {
+    width: 260px;
+  }
+  
+  /* Chat mais baixo em landscape */
+  #chat-box {
+    height: 200px;
+  }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   Estilizacao da barra de rolagem para combinar com o tema
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cor-borda);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cor-primaria);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cor-destaque);
+}
+
+/* ============================================
+   ANIMACOES
+   Animacao de fade-in para transicao entre telas
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tela.ativa {
+  animation: fadeIn 0.3s ease;
 }

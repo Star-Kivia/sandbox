@@ -121,6 +121,7 @@ function iniciarJogo() {
     // Limpa mensagem de erro e salva o nickname
     els.erroNickname.textContent = "";
     estado.nickname = nome;
+    enviarNickname(nome);
 
     // Reseta o estado para uma nova partida
     estado.pontos = 0;
@@ -128,7 +129,7 @@ function iniciarJogo() {
     estado.acertos = 0;
     estado.erros = 0;
     estado.respondeu = false;
-    
+
     // Embaralha as perguntas (importa do arquivo questions.js)
     estado.perguntasJogo = embaralhar(perguntas);
 
@@ -186,11 +187,11 @@ function mostrarPergunta() {
 
         botao.appendChild(spanLetra);
         botao.appendChild(spanTexto);
-        
+
         // Cada botão chama responder com seu índice específico
         // Usei uma closure com let para capturar o valor correto
         botao.addEventListener("click", () => responder(idx));
-        
+
         els.opcoesGrid.appendChild(botao);
     });
 
@@ -205,28 +206,28 @@ function mostrarPergunta() {
  */
 function iniciarTimer() {
     const CIRCUNFERENCIA = 107;  // comprimento da circunferência do círculo SVG (2 * pi * raio ≈ 107)
-    
+
     // Cancela timer anterior se existir
     if (estado.timerIntervalo) {
         clearInterval(estado.timerIntervalo);
     }
-    
+
     // Reseta o timer para 20 segundos
     estado.timerSegundos = 20;
     els.timerNum.textContent = estado.timerSegundos;
     els.timerArco.style.strokeDashoffset = 0;
-    
+
     // Inicia novo timer
     estado.timerIntervalo = setInterval(() => {
         if (estado.respondeu) return;  // se já respondeu, não faz nada
-        
+
         estado.timerSegundos--;
         els.timerNum.textContent = estado.timerSegundos;
-        
+
         // Calcula o offset do arco: quando tempo = 0, offset = CIRCUNFERENCIA (arco vazio)
         const offset = CIRCUNFERENCIA * (1 - estado.timerSegundos / 20);
         els.timerArco.style.strokeDashoffset = offset;
-        
+
         // Tempo esgotado!
         if (estado.timerSegundos <= 0) {
             clearInterval(estado.timerIntervalo);
@@ -248,16 +249,16 @@ function responder(indiceEscolhido) {
     // Evita processar a mesma pergunta duas vezes
     if (estado.respondeu) return;
     estado.respondeu = true;
-    
+
     // Para o timer
     if (estado.timerIntervalo) {
         clearInterval(estado.timerIntervalo);
         estado.timerIntervalo = null;
     }
-    
+
     const pergunta = estado.perguntasJogo[estado.indiceAtual];
     const acertou = (indiceEscolhido === pergunta.correta);
-    
+
     // Marca visualmente as opções
     const botoes = els.opcoesGrid.querySelectorAll(".opcao-btn");
     botoes.forEach((botao, idx) => {
@@ -269,18 +270,21 @@ function responder(indiceEscolhido) {
             botao.classList.add("errada");   // marca a opção errada escolhida em vermelho
         }
     });
-    
+
     let pontosGanhos = 0;
-    
+
     if (acertou) {
-        // Calcula pontos baseado no tempo restante
         pontosGanhos = calcularPontos(estado.timerSegundos);
         estado.pontos += pontosGanhos;
         estado.acertos++;
+
+        // 🆕 envia pontos pro servidor (RANKING AO VIVO)
+        socket.emit("pontuar", pontosGanhos);
+
     } else {
         estado.erros++;
     }
-    
+
     // Aguarda 1 segundo para mostrar o feedback (dá tempo de ver as cores)
     setTimeout(() => {
         mostrarFeedback(acertou, pontosGanhos, pergunta.explicacao);
@@ -305,10 +309,10 @@ function mostrarFeedback(acertou, pontosGanhos, explicacao) {
         els.feedbackTitulo.className = "feedback-titulo erro";
         els.feedbackPontos.textContent = "+0";
     }
-    
+
     els.feedbackExplic.textContent = explicacao;
     els.placarParcial.textContent = estado.pontos;
-    
+
     mostrarTela("feedback");
 }
 
@@ -317,7 +321,7 @@ function mostrarFeedback(acertou, pontosGanhos, explicacao) {
  */
 function proximaPergunta() {
     estado.indiceAtual++;
-    
+
     if (estado.indiceAtual < estado.perguntasJogo.length) {
         // Ainda há perguntas: mostra a próxima
         mostrarTela("questao");
@@ -336,21 +340,21 @@ function proximaPergunta() {
 function mostrarResultado() {
     const total = estado.perguntasJogo.length;
     const aproveitamento = Math.round((estado.acertos / total) * 100);
-    
+
     // Define medalha baseada no aproveitamento
     let medalha = "";
     if (aproveitamento >= 90) medalha = "🏆";
     else if (aproveitamento >= 70) medalha = "🥈";
     else if (aproveitamento >= 50) medalha = "🥉";
     else medalha = "😅";
-    
+
     // Mensagem motivacional baseada no desempenho
     let mensagem = "";
     if (aproveitamento >= 90) mensagem = "Excelente! Você é um mestre do conhecimento! 🎉";
     else if (aproveitamento >= 70) mensagem = "Muito bom! Quase perfeito! 👏";
     else if (aproveitamento >= 50) mensagem = "Bom trabalho! Pode melhorar ainda mais! 💪";
     else mensagem = "Que tal revisar os conteúdos e tentar novamente? 📚";
-    
+
     // Atualiza o DOM da tela de resultado
     els.resultadoMedalha.textContent = medalha;
     els.resultadoNome.textContent = estado.nickname;
@@ -359,7 +363,7 @@ function mostrarResultado() {
     els.statErros.textContent = estado.erros;
     els.statPorcento.textContent = `${aproveitamento}%`;
     els.resultadoMsg.textContent = mensagem;
-    
+
     mostrarTela("resultado");
 }
 
@@ -370,7 +374,7 @@ function reiniciarJogo() {
     // Limpa o campo de nickname
     els.inputNickname.value = "";
     els.erroNickname.textContent = "";
-    
+
     // Mostra a tela inicial
     mostrarTela("home");
 }
@@ -400,7 +404,7 @@ function init() {
     // Total de perguntas
     const totalPerguntas = perguntas.length;
     els.totalPerguntas.textContent = totalPerguntas;
-    
+
     // Total de categorias únicas
     const categoriasUnicas = [];
     perguntas.forEach(pergunta => {

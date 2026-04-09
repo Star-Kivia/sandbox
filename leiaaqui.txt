@@ -1,0 +1,166 @@
+BASICO - SOCKET.IO 
+
+Missão: rodar o servidor, abrir o navegador e ver no terminal a mensagem "alguém entrou" quando a pagina carregar.
+Depois que funcionar, o socket esta pronto para integrar ao quiz.
+
+---------------------------------------------------------------------
+PARTE 1 - COMANDOS GIT 
+---------------------------------------------------------------------
+
+Clonar um repositorio do GitHub:
+
+   git clone https://github.com/seunomenogit/algumacoisa.git
+   cd sandbox
+   code .
+
+(caso "code" nao funcione, instale o comando: Shell Command: Install 'code' command in PATH)
+
+Para subir alteracoes de volta para o GitHub:
+
+   git add .
+   git commit -m "minha alteracao"
+   git push
+
+---------------------------------------------------------------------
+PARTE 2 - CONFIGURAR NODE.JS
+---------------------------------------------------------------------
+
+Verificar se Node.js esta instalado:
+
+   node -v
+   npm -v
+
+Se não tiver, baixar do site oficial https://nodejs.org e instalar (next, next, next).
+
+---------------------------------------------------------------------
+PARTE 3 - INICIAR PROJETO E INSTALAR DEPENDENCIAS
+---------------------------------------------------------------------
+
+Dentro da pasta do seu projeto, abra o terminal e digite:
+
+   npm init -y
+
+Isso cria o arquivo package.json (guarda as configuracoes do projeto).
+
+Instalar o servidor do Socket.io e o Express:
+
+   npm install express socket.io
+
+Explicação: express cria o servidor HTTP, socket.io permite comunicação em tempo real.
+
+---------------------------------------------------------------------
+PARTE 4 - CRIAR O ARQUIVO server.js
+---------------------------------------------------------------------
+
+Crie um arquivo chamado server.js na raiz do projeto. Cole o código abaixo.
+
+--- server.js ---------------------------------------------------------
+
+// Importa a biblioteca Express para criar o servidor HTTP
+const express = require("express");
+
+// Importa o modulo HTTP nativo do Node.js
+const http = require("http");
+
+// Importa a funcao Server da biblioteca socket.io
+const { Server } = require("socket.io");
+
+// Cria uma aplicacao Express
+const app = express();
+
+// Cria um servidor HTTP usando a aplicacao Express
+const server = http.createServer(app);
+
+// Cria um servidor Socket.io e o acopla ao servidor HTTP
+const io = new Server(server);
+
+// Serve os arquivos estaticos (HTML, CSS, JS) da pasta atual
+// __dirname significa "diretorio onde este arquivo server.js esta"
+app.use(express.static(__dirname));
+
+// Evento disparado toda vez que um novo cliente (navegador) se conecta
+io.on("connection", (socket) => {
+    // Exibe no terminal do servidor uma mensagem com o ID unico da conexao
+    // Exemplo: "alguém entrou xKj3mNpQ2"
+    console.log("alguem entrou", socket.id);
+});
+
+// Faz o servidor escutar na porta 3000
+server.listen(3000, () => {
+    // Exibe no terminal a mensagem de que o servidor esta rodando
+    console.log("rodando em http://localhost:3000");
+});
+
+--- fim server.js -----------------------------------------------------
+
+---------------------------------------------------------------------
+PARTE 5 - ADICIONAR SOCKET NO SEU INDEX.HTML
+---------------------------------------------------------------------
+
+No final do seu arquivo index.html (antes de fechar a tag </body>), adicione o codigo abaixo.
+
+--- trecho para colocar no index.html ---------------------------------
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Cria a conexao com o servidor Socket.io
+  // O servidor esta rodando na mesma porta (3000)
+  const socket = io();
+
+  // Evento disparado quando a conexao e estabelecida com sucesso
+  socket.on("connect", () => {
+      // Exibe no console do navegador (F12) o ID da conexao
+      console.log("conectado ao servidor", socket.id);
+  });
+</script>
+
+--- fim do trecho -----------------------------------------------------
+
+---------------------------------------------------------------------
+PARTE 6 - RODAR O SERVIDOR E TESTAR
+---------------------------------------------------------------------
+
+No terminal, dentro da pasta do projeto, digite:
+
+   node server.js
+
+Você ve a mensagem: "rodando em http://localhost:3000"
+
+Abra o navegador e acesse: http://localhost:3000
+
+No terminal do servidor, aparecera:
+
+   alguém entrou (código de identificação)
+
+Cada vez que uma nova aba ou navegador carregar a pagina, uma nova linha aparecera no terminal.
+
+Para parar o servidor: Ctrl + C
+
+---------------------------------------------------------------------
+PRONTOO
+---------------------------------------------------------------------
+
+- O servidor esta rodando e escutando na porta 3000.
+- Sempre que alguém acessa a pagina, o evento "connection" e disparado.
+- O terminal mostra "alguém entrou" junto com um ID unico.
+- O console do navegador mostra "conectado ao servidor".
+
+Se você viu essas mensagens, o Socket.io esta funcionando perfeitamente.
+
+---------------------------------------------------------------------
+PROXIMO PASSO - INTEGRAR NO SEU APP.JS (Vou mandar meus arquivos: index, css, socket, server e menu. O código está 100% comentado explicando tudo, só ir olhando, implementando e vendo as alterações)
+---------------------------------------------------------------------
+
+Depois que eu mandar os arquivos, é só adicionar APENAS DUAS LINHAS no seu S1_app.js.
+
+As linhas são:
+
+1) Dentro da função iniciarJogo(), depois de validar o nickname:
+
+   enviarNickname(nome);
+
+2) Dentro da função responder(), quando o jogador acerta:
+
+   socket.emit("pontuar", pontosGanhos);
+
+O resto do seu código permanece exatamente igual. Essas duas linhas conectam o jogo ao multiplayer.
