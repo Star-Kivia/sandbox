@@ -15,7 +15,7 @@ Clonar um repositorio do GitHub:
 
 (caso "code" nao funcione, instale o comando: Shell Command: Install 'code' command in PATH)
 
-Para subir alteracoes de volta para o GitHub:
+Para subir alterações de volta para o GitHub:
 
    git add .
    git commit -m "minha alteracao"

@@ -194,7 +194,23 @@ function embaralhar(array) {
 // }
 
 function normalizarPergunta(item, fonte, indice) {
+  var pergunta        = decodificarBase64(item.question)
+  var respostaCorreta = decodificarBase64(item.correct_answer)
+  var erradas         = item.incorrect_answers.map(function(r) {
+    return decodificarBase64(r)
+  })
 
+  var opcoes        = embaralhar([respostaCorreta].concat(erradas))
+  var indiceCorreta = opcoes.indexOf(respostaCorreta)
+
+  return {
+    id:         indice + 1,
+    categoria:  fonte.categoria,
+    pergunta:   pergunta,
+    opcoes:     opcoes,
+    correta:    indiceCorreta,
+    explicacao: "Fonte: Open Trivia DB · " + decodificarBase64(item.category)
+  }
 }
 
 
@@ -204,7 +220,12 @@ function normalizarPergunta(item, fonte, indice) {
 // até a resposta chegar, depois continua.
 
 async function buscarDeFonte(fonte, offsetId) {
+  var resposta = await fetch(fonte.url)
+  var dados    = await resposta.json()
 
+  return dados.results.map(function(item, i) {
+    return normalizarPergunta(item, fonte, offsetId + i)
+  })
 }
 
 
@@ -214,7 +235,20 @@ async function buscarDeFonte(fonte, offsetId) {
 // Mais rápido do que fazer um por um.
 
 async function carregarPerguntas() {
+  try {
+    var promessas = FONTES.map(function(fonte, i) {
+      return buscarDeFonte(fonte, i * 5)
+    })
 
+    var resultados     = await Promise.all(promessas)
+    var todasPerguntas = [].concat.apply([], resultados)
+
+    return embaralhar(todasPerguntas)
+
+  } catch (erro) {
+    console.error("[QuizCaju] Falha ao carregar perguntas:", erro)
+    return perguntas  // ← FALLBACK: usa as perguntas fixas se a API falhar
+  }
 }
 
 
@@ -229,4 +263,4 @@ async function carregarPerguntas() {
 //   var perguntas = await window.bancoDePerguntasAsync
 //   → aí o array está pronto para usar
 
-// window.bancoDePerguntasAsync = carregarPerguntas()
+window.bancoDePerguntasAsync = carregarPerguntas()

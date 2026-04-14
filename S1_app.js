@@ -29,6 +29,7 @@ const els = {
     btnIniciar: document.getElementById("btn-iniciar"),
     totalPerguntas: document.getElementById("total-perguntas"),
     totalCategorias: document.getElementById("total-categorias"),
+    loadingMsg: document.getElementById("loading-msg"),  // ← MUDANÇA A01
 
     // QUESTÃO 
     questaoAtual: document.getElementById("questao-atual"),
@@ -106,10 +107,11 @@ function calcularPontos(segundosRestantes) {
  * Inicia uma nova partida.
  * - Valida o nickname 
  * - Reseta o estado do jogo
+ * - Busca as perguntas da API (agora async)
  * - Embaralha as perguntas
  * - Mostra a primeira pergunta
  */
-function iniciarJogo() {
+async function iniciarJogo() {  // ← MUDANÇA A02 (async adicionado)
     const nome = els.inputNickname.value.trim();
 
     // Validação: nickname deve ter pelo menos 2 caracteres
@@ -130,8 +132,9 @@ function iniciarJogo() {
     estado.erros = 0;
     estado.respondeu = false;
 
-    // Embaralha as perguntas (importa do arquivo questions.js)
-    estado.perguntasJogo = embaralhar(perguntas);
+    // ← MUDANÇA A02 (substitui a linha que usava perguntas hardcoded)
+    var todasPerguntas   = await window.bancoDePerguntasAsync
+    estado.perguntasJogo = embaralhar(todasPerguntas)
 
     // Cancela qualquer timer que possa estar rodando
     if (estado.timerIntervalo) {
@@ -257,13 +260,16 @@ function responder(indiceEscolhido) {
     }
 
     const pergunta = estado.perguntasJogo[estado.indiceAtual];
-    const acertou = (indiceEscolhido === pergunta.correta);
+    // ← MUDANÇA A03 (guarda o índice correto em uma variável)
+    var indiceCorreto = pergunta.correta
+    var acertou       = (indiceEscolhido === indiceCorreto)
 
     // Marca visualmente as opções
     const botoes = els.opcoesGrid.querySelectorAll(".opcao-btn");
     botoes.forEach((botao, idx) => {
         botao.disabled = true;  // desabilita todos os botões
-        if (idx === pergunta.correta) {
+        // ← MUDANÇA A03 (usa indiceCorreto ao invés de pergunta.correta)
+        if (idx === indiceCorreto) {
             botao.classList.add("correta");  // marca a opção correta em verde
         }
         if (idx === indiceEscolhido && !acertou) {
@@ -399,20 +405,31 @@ els.btnJogarNovamente.addEventListener("click", reiniciarJogo);
  * Configura a tela inicial com os dados do banco de perguntas.
  * - Mostra o total de perguntas
  * - Mostra o total de categorias únicas
+ * - Agora async: carrega da API e mostra loading
  */
-function init() {
-    // Total de perguntas
-    const totalPerguntas = perguntas.length;
-    els.totalPerguntas.textContent = totalPerguntas;
+async function init() {  // ← MUDANÇA A04 (async adicionado)
+    els.btnIniciar.disabled    = true
+    els.loadingMsg.textContent = "carregando perguntas..."
 
-    // Total de categorias únicas
-    const categoriasUnicas = [];
-    perguntas.forEach(pergunta => {
-        if (!categoriasUnicas.includes(pergunta.categoria)) {
-            categoriasUnicas.push(pergunta.categoria);
+    try {
+        var perguntas = await window.bancoDePerguntasAsync
+
+        var categorias = []
+        for (var i = 0; i < perguntas.length; i++) {
+            if (categorias.indexOf(perguntas[i].categoria) === -1) {
+                categorias.push(perguntas[i].categoria)
+            }
         }
-    });
-    els.totalCategorias.textContent = categoriasUnicas.length;
+
+        els.totalPerguntas.textContent  = perguntas.length
+        els.totalCategorias.textContent = categorias.length
+        els.loadingMsg.textContent      = ""
+        els.btnIniciar.disabled         = false
+
+    } catch (erro) {
+        els.loadingMsg.textContent = "erro ao carregar. recarregue a página."
+        console.error("[QuizCaju] Falha na inicialização:", erro)
+    }
 }
 
 // Chama a inicialização quando a página carrega
